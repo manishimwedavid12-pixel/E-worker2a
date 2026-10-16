@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<title>FarmSmart v23.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  body { background-color: #fefbf6; font-family: system-ui, -apple-system, sans-serif; }
+  .fade-in { animation: fadeIn .25s ease-in; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col md:flex-row">
+
+<!-- SIDEBAR -->
+<aside class="hidden md:flex md:w-60 bg-green-900 text-white flex-col fixed inset-y-0 left-0 z-30">
+  <div class="p-5 border-b border-green-800 flex items-center space-x-2">
+    <div class="bg-green-500 p-2 rounded-lg"><i class="fa-solid fa-seedling text-lg"></i></div>
+    <div><h1 class="font-bold">FarmSmart</h1><p class="text-[10px] text-green-200">v23.0</p></div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
+    <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-chart-pie w-5 text-center"></i><span>Ahabanza</span></button>
+    <button onclick="switchTab('search')" data-tab="search" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-magnifying-glass w-5 text-center"></i><span>Shakisha</span></button>
+    <button onclick="switchTab('employees')" data-tab="employees" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-users w-5 text-center"></i><span>Abakozi</span></button>
+    <button onclick="switchTab('rates')" data-tab="rates" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-tags w-5 text-center"></i><span>Amafaranga</span></button>
+    <button onclick="switchTab('work')" data-tab="work" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-clipboard-list w-5 text-center"></i><span>Imirimo</span></button>
+    <button onclick="switchTab('salaries')" data-tab="salaries" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-wallet w-5 text-center"></i><span>Imishahara</span></button>
+    <button onclick="switchTab('daily')" data-tab="daily" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-calendar-check w-5 text-center"></i><span>Iminsi</span></button>
+    <button onclick="switchTab('reports')" data-tab="reports" class="nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm text-green-100 hover:bg-green-800"><i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i><span>Raporo</span></button>
+  </nav>
+  <div class="p-3 border-t border-green-800 space-y-1.5">
+    <button onclick="exportBackup()" class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium bg-green-800 hover:bg-green-700 text-green-100"><i class="fa-solid fa-download"></i><span>Bika Backup</span></button>
+    <label class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium bg-green-800 hover:bg-green-700 text-green-100 cursor-pointer"><i class="fa-solid fa-upload"></i><span>Garura Backup</span><input type="file" accept=".json" onchange="importBackup(event)" class="hidden"></label>
+  </div>
+</aside>
+
+<header class="md:hidden bg-green-900 text-white p-3 flex items-center justify-between sticky top-0 z-30">
+  <div class="flex items-center space-x-2">
+    <div class="bg-green-500 p-2 rounded-lg"><i class="fa-solid fa-seedling"></i></div>
+    <h1 class="font-bold">FarmSmart</h1>
+  </div>
+  <button onclick="exportBackup()" class="bg-green-800 p-2 rounded-lg text-xs"><i class="fa-solid fa-download"></i></button>
+</header>
+
+<main class="flex-1 md:ml-60 pb-24 md:pb-8 p-3 md:p-6 max-w-6xl mx-auto w-full">
+<div id="toast-container" class="fixed top-4 right-4 z-[60] space-y-2 pointer-events-none"></div>
+
+<!-- DASHBOARD -->
+<section id="tab-dashboard" class="tab-section space-y-4 fade-in">
+  <div><h2 class="text-2xl font-bold text-green-900">Ahabanza</h2><p class="text-sm text-gray-600" id="dashboard-date-label">—</p></div>
+  <div class="bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white shadow-lg">
+    <p class="text-green-200 text-xs uppercase tracking-wider font-bold mb-1">💰 Amafaranga Yose</p>
+    <h3 class="text-3xl font-bold" id="hero-total-earned">0 Frw</h3>
+    <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-green-600/40">
+      <div><p class="text-green-100 text-[10px] uppercase font-bold">✅ Yishyuwe</p><p class="text-lg font-bold" id="hero-total-paid">0 Frw</p></div>
+      <div><p class="text-amber-200 text-[10px] uppercase font-bold">🕐 Asigaye</p><p class="text-lg font-bold text-amber-300" id="hero-total-outstanding">0 Frw</p></div>
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-2">
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">🌞 Uyu Munsi</p><p class="text-lg font-bold text-green-900" id="today-earned">0 Frw</p></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">📅 Iki Cyumweru</p><p class="text-lg font-bold text-green-900" id="week-earned">0 Frw</p></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">🗓️ Uku Kwezi</p><p class="text-lg font-bold text-green-900" id="month-earned">0 Frw</p></div>
+  </div>
+  <div class="grid grid-cols-2 gap-2">
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><p class="text-[10px] font-bold text-blue-900 uppercase">👥 Abakozi</p><p class="text-2xl font-bold text-blue-900" id="stat-total-employees">0</p></div>
+    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><p class="text-[10px] font-bold text-rose-900 uppercase">⚠️ Umwenda</p><p class="text-2xl font-bold text-rose-900" id="total-debt">0 Frw</p><p class="text-[10px] text-rose-700"><span id="debt-emp-count">0</span> bafite umwenda</p></div>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<section id="tab-search" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Shakisha Umukozi</h2><p class="text-sm text-gray-600">Shyiramo izina cyangwa ID</p></div>
+  <div class="bg-white p-4 rounded-2xl shadow-sm border-2 border-green-200">
+    <div class="relative">
+      <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 text-lg"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <input type="text" id="search-input" oninput="renderSearchResults()" placeholder="Izina cyangwa ID..." class="w-full pl-12 pr-10 py-4 bg-green-50 border-2 border-green-200 rounded-xl text-base focus:border-green-500" autocomplete="off">
+      <button onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600" id="clear-search-btn" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <div id="search-results" class="space-y-3"></div>
+</section>
+
+<!-- EMPLOYEES -->
+<section id="tab-employees" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Abakozi</h2><p class="text-sm text-gray-600">Bose: <span id="emp-count" class="font-bold text-green-700">0</span></p></div>
+  <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50">
+    <h3 class="font-bold mb-3 pb-2 border-b flex items-center justify-between">
+      <span class="flex items-center space-x-2"><i class="fa-solid fa-user-plus text-green-600"></i><span id="emp-form-title">Andikisha Umukozi</span></span>
+      <button id="emp-form-cancel" onclick="resetEmployeeForm()" class="hidden text-xs text-rose-600 font-medium"><i class="fa-solid fa-xmark"></i> Reka</button>
+    </h3>
+    <form id="employee-form" onsubmit="handleEmployeeSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <input type="hidden" id="emp-edit-id">
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Amazina *</label><input type="text" id="emp-name" required placeholder="David Habimana" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Telefoni</label><input type="text" id="emp-phone" placeholder="078xxxxxxx" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Akazi *</label><select id="emp-role" onchange="onEmployeeRoleChange()" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="">-- Hitamo --</option></select></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Igipimo (Frw) *</label><input type="number" id="emp-wage-rate" min="0" required class="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Italiki *</label><input type="date" id="emp-start-date" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Imiterere *</label><select id="emp-status" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="active">Arakora</option><option value="inactive">Ntacyo akora</option></select></div>
+      <div class="md:col-span-2 lg:col-span-3 flex justify-end space-x-2 pt-2 border-t border-gray-100">
+        <button type="button" onclick="resetEmployeeForm()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg text-sm font-medium">Subiza</button>
+        <button type="submit" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow text-sm"><i class="fa-solid fa-save mr-1"></i><span id="emp-submit-label">Bika</span></button>
+      </div>
+    </form>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="bg-amber-50 text-xs font-semibold text-gray-600 uppercase border-b">
+          <th class="p-3">ID</th><th class="p-3">Amazina</th><th class="p-3">Akazi</th><th class="p-3">Igipimo</th><th class="p-3">Imiterere</th><th class="p-3 text-right">Ibikorwa</th>
+        </tr></thead>
+        <tbody id="employees-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- RATES -->
+<section id="tab-rates" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Amafaranga ku Bwoko bw'Akazi</h2></div>
+  <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50">
+    <h3 class="font-bold mb-3 pb-2 border-b flex items-center justify-between">
+      <span class="flex items-center space-x-2"><i class="fa-solid fa-tag text-green-600"></i><span id="rate-form-title">Ongeraho Akazi</span></span>
+      <button id="rate-form-cancel" onclick="resetRateForm()" class="hidden text-xs text-rose-600 font-medium"><i class="fa-solid fa-xmark"></i> Reka</button>
+    </h3>
+    <form id="rate-form" onsubmit="handleRateSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <input type="hidden" id="rate-edit-id">
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Izina *</label><input type="text" id="rate-name" required placeholder="Guhinga" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Icon</label><input type="text" id="rate-icon" placeholder="🌾" maxlength="4" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm text-center text-xl"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Igipimo (Frw) *</label><input type="number" id="rate-amount" min="0" required placeholder="5000" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div class="flex items-end"><button type="submit" class="w-full px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow text-sm"><i class="fa-solid fa-save mr-1"></i><span id="rate-submit-label">Bika</span></button></div>
+    </form>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="bg-amber-50 text-xs font-semibold text-gray-600 uppercase border-b">
+          <th class="p-3">Icon</th><th class="p-3">Akazi</th><th class="p-3">Igipimo</th><th class="p-3">Abakozi</th><th class="p-3 text-right">Ibikorwa</th>
+        </tr></thead>
+        <tbody id="rates-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section id="tab-work" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Imirimo Yakozwe</h2></div>
+  <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50">
+    <h3 class="font-bold mb-3 pb-2 border-b flex items-center justify-between">
+      <span class="flex items-center space-x-2"><i class="fa-solid fa-pen-to-square text-green-600"></i><span id="work-form-title">Andika Umurimo</span></span>
+      <button id="work-form-cancel" onclick="resetWorkForm()" class="hidden text-xs text-rose-600 font-medium"><i class="fa-solid fa-xmark"></i> Reka</button>
+    </h3>
+    <form id="work-form" onsubmit="handleWorkSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <input type="hidden" id="work-edit-id">
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Umukozi *</label><select id="work-employee-id" onchange="onWorkEmployeeSelect()" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="">-- Hitamo --</option></select></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Akazi *</label><select id="work-type" onchange="onWorkTypeChange()" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="">-- Hitamo --</option></select></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Italiki *</label><input type="date" id="work-date" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label id="work-qty-label" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Ingano *</label><input type="number" id="work-quantity" step="0.5" min="0.5" value="1" oninput="calculateWorkTotal()" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Igipimo *</label><input type="number" id="work-rate" min="0" oninput="calculateWorkTotal()" required class="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Notes</label><input type="text" id="work-notes" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div class="md:col-span-2 lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100 gap-2">
+        <div><span class="text-xs text-green-800 font-semibold uppercase">Total:</span><div id="work-calculated-total" class="text-lg font-bold text-green-900">0 Frw</div></div>
+        <div class="flex space-x-2 w-full sm:w-auto">
+          <button type="button" onclick="resetWorkForm()" class="flex-1 sm:flex-initial px-4 py-2 text-gray-600 bg-gray-100 rounded-lg text-sm font-medium">Subiza</button>
+          <button type="submit" class="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-lg shadow text-sm"><i class="fa-solid fa-save mr-1"></i><span id="work-submit-label">Bika</span></button>
+        </div>
+      </div>
+    </form>
+    <div class="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-lg">
+      <p class="text-xs text-rose-800"><i class="fa-solid fa-shield-alt"></i> <b>Amabwiriza:</b> Ntushobora kwandika umurimo w'akazi kamwe ku munsi umwe inshuro 2</p>
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+    <div class="p-4 border-b"><h3 class="font-bold">Amateka y'Imirimo</h3></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="bg-amber-50 text-xs font-semibold text-gray-600 uppercase border-b">
+          <th class="p-3">Italiki</th><th class="p-3">Umukozi</th><th class="p-3">Akazi</th><th class="p-3">Ingano</th><th class="p-3">Total</th><th class="p-3 text-right">Ibikorwa</th>
+        </tr></thead>
+        <tbody id="work-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SALARIES -->
+<section id="tab-salaries" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Imishahara</h2></div>
+  <div id="payment-form-card" class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50 hidden">
+    <h3 class="font-bold mb-3 pb-2 border-b flex items-center justify-between">
+      <span class="flex items-center space-x-2"><i class="fa-solid fa-money-bill-wave text-green-600"></i><span>Ishyura: <span id="pay-emp-name-display" class="text-green-700"></span></span></span>
+      <button onclick="closePaymentForm()" class="text-xs text-rose-600 font-medium"><i class="fa-solid fa-xmark"></i> Funga</button>
+    </h3>
+    <form id="payment-form" onsubmit="handlePaymentSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <input type="hidden" id="pay-employee-id">
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Umwenda</label><input type="text" id="pay-outstanding-display" disabled class="w-full px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 font-bold"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Amafaranga *</label><input type="number" id="pay-amount" min="1" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Italiki *</label><input type="date" id="pay-date" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Uburyo *</label><select id="pay-method" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="cash">Cash</option><option value="momo">MoMo</option><option value="bank">Bank</option></select></div>
+      <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Notes</label><input type="text" id="pay-notes" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div class="md:col-span-2 lg:col-span-3 flex justify-end pt-2 border-t border-gray-100"><button type="submit" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow text-sm"><i class="fa-solid fa-check mr-1"></i> Emeza</button></div>
+    </form>
+  </div>
+  <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50 flex flex-wrap gap-2">
+    <button onclick="setSalaryFilter('all')" id="sal-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-700 text-white">Bose (<span id="cnt-all">0</span>)</button>
+    <button onclick="setSalaryFilter('pending')" id="sal-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Umwenda (<span id="cnt-pending">0</span>)</button>
+    <button onclick="setSalaryFilter('paid')" id="sal-filter-paid" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600">Yishyuwe (<span id="cnt-paid">0</span>)</button>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead><tr class="bg-amber-50 text-xs font-semibold text-gray-600 uppercase border-b">
+          <th class="p-3">Umukozi</th><th class="p-3">Yakoreye</th><th class="p-3">Yishyuwe</th><th class="p-3">Asigaye</th><th class="p-3 text-right">Igikorwa</th>
+        </tr></thead>
+        <tbody id="salaries-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- DAILY -->
+<section id="tab-daily" class="tab-section space-y-4 hidden">
+  <div><h2 class="text-2xl font-bold text-green-900">Iminsi ku Minsi</h2></div>
+  <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50">
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Kuva</label><input type="date" id="daily-from" onchange="renderDaily()" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Kugeza</label><input type="date" id="daily-to" onchange="renderDaily()" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-2">
+      <button onclick="setDailyQuick('today')" class="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-green-100 rounded-lg">Uyu Munsi</button>
+      <button onclick="setDailyQuick('week')" class="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-green-100 rounded-lg">Iki Cyumweru</button>
+      <button onclick="setDailyQuick('month')" class="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-green-100 rounded-lg">Uku Kwezi</button>
+    </div>
+  </div>
+  <div id="daily-summary" class="grid grid-cols-3 gap-2"></div>
+  <div id="daily-cards" class="space-y-3"></div>
+</section>
+
+<!-- ============ REPORTS (v23 - IMINSI KU MINSI) ============ -->
+<section id="tab-reports" class="tab-section space-y-4 hidden">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-green-900">Raporo</h2>
+      <p class="text-sm text-gray-600">Hitamo igihe urebe amakuru</p>
+    </div>
+    <button onclick="exportSalaryReportCSV()" class="flex items-center space-x-1 bg-green-700 hover:bg-green-800 text-white font-medium px-3 py-2 rounded-lg shadow text-xs">
+      <i class="fa-solid fa-file-csv"></i><span>CSV</span>
+    </button>
+  </div>
+
+  <input type="hidden" id="report-from" value="">
+  <input type="hidden" id="report-to" value="">
+
+  <!-- QUICK BUTTONS -->
+  <div class="bg-white p-3 rounded-2xl shadow-sm border border-amber-50">
+    <p class="text-xs font-bold text-gray-500 uppercase mb-2"><i class="fa-solid fa-bolt text-amber-500"></i> Hitamo Byihuse</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <button onclick="setReportQuick('today')" id="rp-btn-today" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+        <i class="fa-solid fa-sun text-amber-500 text-xl mb-1"></i>
+        <span class="text-xs font-bold text-gray-700">Uyu Munsi</span>
+        <span class="text-[9px] text-gray-500" id="rp-date-today">—</span>
+      </button>
+      <button onclick="setReportQuick('week')" id="rp-btn-week" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+        <i class="fa-solid fa-calendar-week text-blue-500 text-xl mb-1"></i>
+        <span class="text-xs font-bold text-gray-700">Iki Cyumweru</span>
+        <span class="text-[9px] text-gray-500" id="rp-date-week">—</span>
+      </button>
+      <button onclick="setReportQuick('month')" id="rp-btn-month" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+        <i class="fa-solid fa-calendar-days text-purple-500 text-xl mb-1"></i>
+        <span class="text-xs font-bold text-gray-700">Uku Kwezi</span>
+        <span class="text-[9px] text-gray-500" id="rp-date-month">—</span>
+      </button>
+      <button onclick="openCalendarRange()" id="rp-btn-custom" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition">
+        <i class="fa-solid fa-calendar-plus text-green-600 text-xl mb-1"></i>
+        <span class="text-xs font-bold text-gray-700">Hitamo Italiki</span>
+        <span class="text-[9px] text-gray-500">Custom</span>
+      </button>
+    </div>
+    
+    <div id="rp-current-range" class="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg text-center hidden">
+      <p class="text-xs text-green-900"><i class="fa-solid fa-calendar-check text-green-600"></i> <b>Igihe:</b> <span id="rp-range-display">—</span></p>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">💰 Yakorewe</p><h3 id="report-total-earned" class="text-lg font-bold text-green-900">0 Frw</h3></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">✅ Yishyuwe</p><h3 id="report-total-paid" class="text-lg font-bold text-purple-700">0 Frw</h3></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">🕐 Asigaye</p><h3 id="report-total-outstanding" class="text-lg font-bold text-rose-600">0 Frw</h3></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">👥 Abakozi</p><h3 id="report-emp-count" class="text-lg font-bold text-blue-700">0</h3></div>
+  </div>
+
+  <!-- TOGGLE VIEW -->
+  <div class="bg-white p-2 rounded-xl shadow-sm border border-amber-50 flex gap-2">
+    <button onclick="setReportView('daily')" id="rp-view-daily" class="flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-green-700 text-white transition">
+      <i class="fa-solid fa-calendar-day"></i> Iminsi ku Minsi
+    </button>
+    <button onclick="setReportView('full')" id="rp-view-full" class="flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+      <i class="fa-solid fa-list"></i> Raporo Yose
+    </button>
+  </div>
+
+  <!-- VIEW 1: IMINSI KU MINSI -->
+  <div id="report-view-daily">
+    <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+      <div class="p-4 border-b bg-green-50">
+        <h3 class="font-bold text-sm flex items-center space-x-2">
+          <i class="fa-solid fa-calendar-day text-green-600"></i>
+          <span>Iminsi ku Minsi — <span id="report-daily-label" class="text-green-700">—</span></span>
+        </h3>
+        <p class="text-[10px] text-gray-500 mt-1">Kanda ku munsi uwo ari wo urebe amakuru yayo</p>
+      </div>
+      <div id="report-daily-cards" class="p-4 space-y-2 max-h-[700px] overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: RAPORO YOSE -->
+  <div id="report-view-full" class="hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+      <div class="p-4 border-b">
+        <h3 class="font-bold text-sm">Abakozi — <span id="report-range-label" class="text-green-700">Byose</span></h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead><tr class="bg-amber-50 text-xs font-semibold text-gray-600 uppercase border-b">
+            <th class="p-3">ID</th><th class="p-3">Amazina</th><th class="p-3">Akazi</th><th class="p-3">Imirimo</th>
+            <th class="p-3">Yakoreye</th><th class="p-3">Yishyuwe</th><th class="p-3">Asigaye</th>
+          </tr></thead>
+          <tbody id="reports-table-body" class="divide-y divide-gray-100 text-sm"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KUREBA UMUNSI UMWE -->
+  <div id="day-detail-modal" class="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="bg-green-900 text-white p-4 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <h3 class="font-bold flex items-center space-x-2">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span id="day-modal-title">—</span>
+          </h3>
+          <p class="text-[10px] text-green-200" id="day-modal-subtitle">—</p>
+        </div>
+        <button onclick="closeDayDetail()" class="text-green-200 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto">
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="bg-green-50 p-3 rounded-xl border border-green-200 text-center">
+            <p class="text-[10px] font-bold text-green-700 uppercase">💰 Yakorewe</p>
+            <p class="text-base font-bold text-green-900" id="day-modal-earned">0 Frw</p>
+          </div>
+          <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center">
+            <p class="text-[10px] font-bold text-purple-700 uppercase">✅ Yishyuwe</p>
+            <p class="text-base font-bold text-purple-700" id="day-modal-paid">0 Frw</p>
+          </div>
+          <div class="bg-rose-50 p-3 rounded-xl border border-rose-200 text-center">
+            <p class="text-[10px] font-bold text-rose-700 uppercase">🕐 Asigaye</p>
+            <p class="text-base font-bold text-rose-700" id="day-modal-remaining">0 Frw</p>
+          </div>
+        </div>
+
+        <h4 class="font-bold text-sm text-gray-700 mb-2 flex items-center space-x-2">
+          <i class="fa-solid fa-users text-green-600"></i>
+          <span>Abakozi bakoraga uyu munsi (<span id="day-modal-emp-count">0</span>)</span>
+        </h4>
+        <div id="day-modal-employees" class="space-y-2"></div>
+      </div>
+      <div class="p-3 border-t bg-gray-50">
+        <button onclick="closeDayDetail()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 rounded-xl text-sm">
+          Funga
+        </button>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<!-- CALENDAR MODAL -->
+<div id="calendar-modal" class="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+    <div class="bg-green-900 text-white p-4 flex items-center justify-between">
+      <div class="flex items-center space-x-2"><i class="fa-solid fa-calendar-alt text-lg"></i><h3 class="font-bold">Hitamo Italiki</h3></div>
+      <button onclick="closeCalendarRange()" class="text-green-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div class="p-5">
+      <p class="text-xs text-gray-600 mb-3"><i class="fa-solid fa-info-circle text-green-600"></i> Hitamo <b>Kuva</b> na <b>Kugeza</b>, hanyuma ukande "Emeza"</p>
+      <div class="space-y-3">
+        <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1"><i class="fa-solid fa-play text-green-600"></i> Kuva</label><input type="date" id="cal-from" class="w-full px-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:border-green-500"></div>
+        <div><label class="block text-xs font-bold text-gray-700 uppercase mb-1"><i class="fa-solid fa-stop text-rose-600"></i> Kugeza</label><input type="date" id="cal-to" class="w-full px-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:border-green-500"></div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-gray-100">
+        <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Cyangwa ukoreshe byihuse:</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="quickCal('today')" class="px-2 py-1 text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold rounded">Uyu Munsi</button>
+          <button onclick="quickCal('week')" class="px-2 py-1 text-[10px] bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded">Iki Cyumweru</button>
+          <button onclick="quickCal('month')" class="px-2 py-1 text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-800 font-semibold rounded">Uku Kwezi</button>
+          <button onclick="quickCal('lastmonth')" class="px-2 py-1 text-[10px] bg-pink-100 hover:bg-pink-200 text-pink-800 font-semibold rounded">Ukwezi Gushize</button>
+          <button onclick="quickCal('year')" class="px-2 py-1 text-[10px] bg-green-100 hover:bg-green-200 text-green-800 font-semibold rounded">Uyu Mwaka</button>
+        </div>
+      </div>
+      <div class="flex space-x-2 mt-4 pt-4 border-t border-gray-100">
+        <button onclick="closeCalendarRange()" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl text-sm">Reka</button>
+        <button onclick="applyCalendarRange()" class="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow text-sm"><i class="fa-solid fa-check mr-1"></i> Emeza</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="md:hidden bg-white border-t fixed inset-x-0 bottom-0 z-30 flex justify-around py-1.5 shadow-lg no-scrollbar overflow-x-auto">
+  <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-chart-pie text-base"></i><span class="text-[9px]">Ahabanza</span></button>
+  <button onclick="switchTab('search')" data-tab="search" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-magnifying-glass text-base"></i><span class="text-[9px]">Shakisha</span></button>
+  <button onclick="switchTab('employees')" data-tab="employees" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-users text-base"></i><span class="text-[9px]">Abakozi</span></button>
+  <button onclick="switchTab('work')" data-tab="work" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-clipboard-list text-base"></i><span class="text-[9px]">Imirimo</span></button>
+  <button onclick="switchTab('reports')" data-tab="reports" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-file-invoice-dollar text-base"></i><span class="text-[9px]">Raporo</span></button>
+</nav>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 text-center space-y-3">
+    <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3 id="confirm-title" class="font-bold text-lg">Emeza</h3>
+    <p id="confirm-message" class="text-sm text-gray-600">Uremeza?</p>
+    <div class="flex space-x-2 pt-2">
+      <button onclick="closeConfirmModal()" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">Oya</button>
+      <button id="confirm-action-btn" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg">Yego</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   FARM SMART v23.0 — RAPORO YUZUYE
+   ============================================================ */
+
+let categories = JSON.parse(localStorage.getItem('farmsmart_categories')) || [
+  { id: 'CAT-1', name: 'Guhinga',  icon: '🌾', rate: 5000 },
+  { id: 'CAT-2', name: 'Kubagara', icon: '🌿', rate: 3500 },
+  { id: 'CAT-3', name: 'Kuhira',   icon: '💧', rate: 3000 },
+  { id: 'CAT-4', name: 'Gutabira', icon: '🌱', rate: 4000 },
+  { id: 'CAT-5', name: 'Umuti',    icon: '💊', rate: 4500 },
+  { id: 'CAT-6', name: 'Kuvom',    icon: '🚜', rate: 6000 }
+];
+let employees = JSON.parse(localStorage.getItem('farmsmart_employees')) || [];
+let workRecords = JSON.parse(localStorage.getItem('farmsmart_work_records')) || [];
+let payments = JSON.parse(localStorage.getItem('farmsmart_payments')) || [];
+let currentSalaryFilter = 'all';
+let confirmCallback = null;
+let currentReportRange = { from: '', to: '', type: 'all' };
+let currentReportView = 'daily';
+
+// ============ HELPERS ============
+function saveData() {
+  try {
+    localStorage.setItem('farmsmart_categories', JSON.stringify(categories));
+    localStorage.setItem('farmsmart_employees', JSON.stringify(employees));
+    localStorage.setItem('farmsmart_work_records', JSON.stringify(workRecords));
+    localStorage.setItem('farmsmart_payments', JSON.stringify(payments));
+    refreshAll();
+  } catch (e) { showToast('Ikibazo: ' + e.message, 'error'); }
+}
+function escapeHTML(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]||t));
+}
+function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
+function todayISO() { return isoDate(new Date()); }
+function isoDate(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+function getCategory(name) { return categories.find(c => c.name === name); }
+function getCategoryIcon(name) { const c = getCategory(name); return c ? c.icon : '📝'; }
+
+function generateNextEmployeeId() {
+  if (employees.length === 0) return 1;
+  const maxId = Math.max(...employees.map(e => Number(e.id) || 0));
+  return maxId + 1;
+}
+
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  if (!c) return;
+  const t = document.createElement('div');
+  const bg = type === 'success' ? 'bg-green-700 text-white' : 'bg-rose-600 text-white';
+  const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+  t.className = `${bg} px-3 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-sm font-medium pointer-events-auto`;
+  t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; t.style.transition = 'all .3s';
+  t.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHTML(msg)}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; }, 20);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(-8px)'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+  const active = document.getElementById('tab-' + tabId);
+  if (active) { active.classList.remove('hidden'); active.classList.add('fade-in'); }
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const isA = b.dataset.tab === tabId;
+    b.className = `nav-btn w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium text-sm ${isA ? 'bg-green-700 text-white' : 'text-green-100 hover:bg-green-800'}`;
+  });
+  document.querySelectorAll('.mob-btn').forEach(b => {
+    const isA = b.dataset.tab === tabId;
+    b.className = `mob-btn flex flex-col items-center flex-1 py-1 min-w-[55px] ${isA ? 'text-green-600 font-bold' : 'text-gray-500'}`;
+  });
+  if (tabId === 'search') setTimeout(() => document.getElementById('search-input')?.focus(), 100);
+  if (tabId === 'reports') renderReports();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getDateRange(type) {
+  const today = new Date();
+  if (type === 'today') return { from: isoDate(today), to: isoDate(today) };
+  if (type === 'week') {
+    const d = new Date(today); const day = d.getDay() || 7;
+    const monday = new Date(d); monday.setDate(d.getDate() - day + 1);
+    return { from: isoDate(monday), to: isoDate(today) };
+  }
+  if (type === 'month') return { from: isoDate(new Date(today.getFullYear(), today.getMonth(), 1)), to: isoDate(today) };
+  return { from: '', to: '' };
+}
+function getWorksInRange(from, to) {
+  if (!from && !to) return workRecords;
+  return workRecords.filter(w => {
+    if (!w.date) return false;
+    if (from && w.date < from) return false;
+    if (to && w.date > to) return false;
+    return true;
+  });
+}
+function getPaymentsInRange(from, to) {
+  if (!from && !to) return payments;
+  return payments.filter(p => {
+    if (!p.date) return false;
+    if (from && p.date < from) return false;
+    if (to && p.date > to) return false;
+    return true;
+  });
+}
+function sumEarned(works) { return works.reduce((s, w) => s + Number(w.quantity) * Number(w.rate), 0); }
+function sumPaid(pays) { return pays.reduce((s, p) => s + Number(p.amount), 0); }
+
+function getEmployeeTotals(empId) {
+  const earned = workRecords.filter(w => String(w.employeeId) === String(empId)).reduce((s, w) => s + (Number(w.quantity) * Number(w.rate)), 0);
+  const paid = payments.filter(p => String(p.employeeId) === String(empId)).reduce((s, p) => s + Number(p.amount), 0);
+  return { earned, paid, outstanding: earned - paid, workCount: workRecords.filter(w => String(w.employeeId) === String(empId)).length };
+}
+
+// ============ SEARCH ============
+function renderSearchResults() {
+  const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
+  const results = document.getElementById('search-results');
+  const clearBtn = document.getElementById('clear-search-btn');
+  if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+  if (!query) {
+    results.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-amber-50 p-8 text-center"><i class="fa-solid fa-magnifying-glass text-4xl text-gray-300 mb-3"></i><p class="text-gray-500">Andika izina cyangwa ID</p></div>`;
+    return;
+  }
+  const matches = employees.filter(e => e.name.toLowerCase().includes(query) || String(e.id).toLowerCase().includes(query));
+  if (matches.length === 0) {
+    results.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-amber-50 p-8 text-center"><i class="fa-solid fa-user-slash text-4xl text-gray-300 mb-3"></i><p class="text-gray-700">Nta mukozi wabonetse</p></div>`;
+    return;
+  }
+  results.innerHTML = matches.map(emp => renderEmployeeDetail(emp)).join('');
+}
+
+function renderEmployeeDetail(emp) {
+  const totals = getEmployeeTotals(emp.id);
+  const empWorks = workRecords.filter(w => String(w.employeeId) === String(emp.id)).sort((a,b) => b.date.localeCompare(a.date));
+  const empPays = payments.filter(p => String(p.employeeId) === String(emp.id)).sort((a,b) => b.date.localeCompare(a.date));
+  const uniqueDates = new Set(empWorks.map(w => w.date));
+  let badge, badgeBg;
+  if (totals.earned === 0) { badge = '⚪ Nta murimo'; badgeBg = 'bg-gray-100 text-gray-600'; }
+  else if (totals.paid === 0) { badge = '🔴 Ntarishyuwe'; badgeBg = 'bg-rose-200 text-rose-900'; }
+  else if (totals.outstanding > 0) { badge = '🕐 Afite umwenda'; badgeBg = 'bg-amber-100 text-amber-800'; }
+  else { badge = '✅ Yishyuwe'; badgeBg = 'bg-green-100 text-green-800'; }
+  return `
+    <div class="bg-white rounded-2xl shadow-sm border border-amber-50 overflow-hidden">
+      <div class="bg-gradient-to-r from-green-700 to-green-900 p-4 text-white">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center font-bold text-xl backdrop-blur">${escapeHTML(emp.name.charAt(0))}</div>
+            <div><h3 class="font-bold text-lg">${escapeHTML(emp.name)}</h3><p class="text-xs text-green-200">ID: <b>${emp.id}</b> · ${getCategoryIcon(emp.role)} ${escapeHTML(emp.role)}</p></div>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${badgeBg}">${badge}</span>
+        </div>
+        ${emp.phone ? `<p class="text-xs text-green-200 mt-2"><i class="fa-solid fa-phone"></i> ${escapeHTML(emp.phone)}</p>` : ''}
+      </div>
+      <div class="grid grid-cols-3 gap-2 p-3 bg-gray-50 border-b">
+        <div class="text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">💰 Yakoreye</p><p class="font-bold text-green-900">${fmt(totals.earned)} Frw</p></div>
+        <div class="text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">✅ Yishyuwe</p><p class="font-bold text-purple-700">${fmt(totals.paid)} Frw</p></div>
+        <div class="text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">🕐 Asigaye</p><p class="font-bold text-rose-600">${fmt(totals.outstanding)} Frw</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 p-3 bg-blue-50 border-b">
+        <div class="text-center"><p class="text-[10px] font-bold text-blue-900 uppercase">📋 Imirimo</p><p class="font-bold text-blue-900">${totals.workCount}</p></div>
+        <div class="text-center"><p class="text-[10px] font-bold text-blue-900 uppercase">📅 Iminsi</p><p class="font-bold text-blue-900">${uniqueDates.size}</p></div>
+        <div class="text-center"><p class="text-[10px] font-bold text-blue-900 uppercase">💵 Igipimo</p><p class="font-bold text-blue-900">${fmt(emp.wageRate)}</p></div>
+      </div>
+      <div class="p-3">
+        <h4 class="font-bold text-sm text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list text-green-600"></i> Imirimo ye (${empWorks.length})</h4>
+        ${empWorks.length === 0 ? `<p class="text-center text-xs text-gray-500 py-3 bg-gray-50 rounded-lg">Nta mirimo</p>` : `
+          <div class="overflow-x-auto max-h-60 overflow-y-auto rounded-lg border border-gray-100">
+            <table class="w-full text-left text-xs">
+              <thead class="sticky top-0 bg-amber-50"><tr><th class="p-2">Italiki</th><th class="p-2">Akazi</th><th class="p-2">Ingano</th><th class="p-2">Total</th></tr></thead>
+              <tbody class="divide-y divide-gray-100">
+                ${empWorks.map(w => `<tr><td class="p-2 text-gray-600">${w.date}</td><td class="p-2">${getCategoryIcon(w.workType)} ${escapeHTML(w.workType)}</td><td class="p-2">${w.quantity}</td><td class="p-2 font-bold text-green-800">${fmt(w.quantity * w.rate)} Frw</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+      <div class="p-3 border-t">
+        <h4 class="font-bold text-sm text-gray-700 mb-2"><i class="fa-solid fa-money-bill-wave text-purple-600"></i> Ubwishyu (${empPays.length})</h4>
+        ${empPays.length === 0 ? `<p class="text-center text-xs text-gray-500 py-3 bg-gray-50 rounded-lg">Nta bwishyu</p>` : `
+          <div class="overflow-x-auto max-h-40 overflow-y-auto rounded-lg border border-gray-100">
+            <table class="w-full text-left text-xs">
+              <thead class="sticky top-0 bg-purple-50"><tr><th class="p-2">Italiki</th><th class="p-2">Amafaranga</th><th class="p-2">Uburyo</th></tr></thead>
+              <tbody class="divide-y divide-gray-100">
+                ${empPays.map(p => `<tr><td class="p-2 text-gray-600">${p.date}</td><td class="p-2 font-bold text-purple-700">${fmt(p.amount)} Frw</td><td class="p-2 text-gray-600">${{ cash: 'Cash', momo: 'MoMo', bank: 'Bank' }[p.method] || p.method}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  renderSearchResults();
+  document.getElementById('search-input').focus();
+}
+
+// ============ EMPLOYEES ============
+function populateRoleSelect() {
+  const sel = document.getElementById('emp-role');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- Hitamo Akazi --</option>' + categories.map(c => `<option value="${escapeHTML(c.name)}">${c.icon} ${escapeHTML(c.name)}</option>`).join('');
+  if (current && categories.some(c => c.name === current)) sel.value = current;
+}
+function onEmployeeRoleChange() {
+  const sel = document.getElementById('emp-role');
+  const rateInput = document.getElementById('emp-wage-rate');
+  if (!sel.value) return;
+  const cat = getCategory(sel.value);
+  if (cat && !rateInput.value) rateInput.value = cat.rate;
+}
+function resetEmployeeForm() {
+  document.getElementById('employee-form').reset();
+  document.getElementById('emp-edit-id').value = '';
+  document.getElementById('emp-start-date').value = todayISO();
+  document.getElementById('emp-form-title').textContent = 'Andikisha Umukozi';
+  document.getElementById('emp-submit-label').textContent = 'Bika';
+  document.getElementById('emp-form-cancel').classList.add('hidden');
+}
+function handleEmployeeSubmit(e) {
+  e.preventDefault();
+  const editId = document.getElementById('emp-edit-id').value;
+  const name = document.getElementById('emp-name').value.trim();
+  const phone = document.getElementById('emp-phone').value.trim();
+  const role = document.getElementById('emp-role').value;
+  const wageRate = Number(document.getElementById('emp-wage-rate').value) || 0;
+  const startDate = document.getElementById('emp-start-date').value || todayISO();
+  const status = document.getElementById('emp-status').value;
+  if (!name) { showToast('Amazina arasabwa', 'error'); return; }
+  if (!role) { showToast('Hitamo akazi', 'error'); return; }
+  if (editId) {
+    const i = employees.findIndex(x => String(x.id) === String(editId));
+    if (i !== -1) { employees[i] = { ...employees[i], name, phone, role, wageRate, startDate, status }; showToast('✅ Umukozi yavuguruwe!'); }
+  } else {
+    const newId = generateNextEmployeeId();
+    employees.push({ id: newId, name, phone, role, wageRate, startDate, status, createdAt: new Date().toISOString() });
+    showToast(`✅ Umukozi yanditswe — ID: ${newId}`);
+  }
+  saveData();
+  resetEmployeeForm();
+}
+function editEmployee(id) {
+  const emp = employees.find(e => String(e.id) === String(id));
+  if (!emp) return;
+  populateRoleSelect();
+  document.getElementById('emp-edit-id').value = emp.id;
+  document.getElementById('emp-name').value = emp.name;
+  document.getElementById('emp-phone').value = emp.phone || '';
+  document.getElementById('emp-role').value = emp.role;
+  document.getElementById('emp-wage-rate').value = emp.wageRate;
+  document.getElementById('emp-start-date').value = emp.startDate;
+  document.getElementById('emp-status').value = emp.status;
+  document.getElementById('emp-form-title').textContent = 'Hindura: ' + emp.name;
+  document.getElementById('emp-submit-label').textContent = 'Bika Impinduka';
+  document.getElementById('emp-form-cancel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function toggleEmployeeStatus(id) {
+  const e = employees.find(x => String(x.id) === String(id));
+  if (!e) return;
+  e.status = e.status === 'active' ? 'inactive' : 'active';
+  saveData();
+  showToast('✅ Imiterere yahinduwe');
+}
+function confirmDeleteEmployee(id) {
+  openConfirmModal('Siba Umukozi', 'Uremeza gusiba uyu mukozi?', () => {
+    employees = employees.filter(e => String(e.id) !== String(id));
+    workRecords = workRecords.filter(w => String(w.employeeId) !== String(id));
+    payments = payments.filter(p => String(p.employeeId) !== String(id));
+    saveData();
+    showToast('✅ Umukozi yasibwe');
+  });
+}
+function renderEmployees() {
+  const tbody = document.getElementById('employees-table-body');
+  document.getElementById('emp-count').textContent = employees.length;
+  if (employees.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Nta mukozi.</td></tr>`; return; }
+  const sorted = [...employees].sort((a,b) => Number(a.id) - Number(b.id));
+  tbody.innerHTML = sorted.map(e => `
+    <tr class="hover:bg-amber-50 transition">
+      <td class="p-3"><span class="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">${e.id}</span></td>
+      <td class="p-3 font-bold text-gray-900">${escapeHTML(e.name)}</td>
+      <td class="p-3 text-gray-700">${getCategoryIcon(e.role)} ${escapeHTML(e.role)}</td>
+      <td class="p-3 text-gray-600">${fmt(e.wageRate)} Frw</td>
+      <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-semibold rounded-full ${e.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}">${e.status === 'active' ? 'Arakora' : 'Ntacyo akora'}</span></td>
+      <td class="p-3 text-right space-x-1 whitespace-nowrap">
+        <button onclick="viewEmployeeFromSearch(${e.id})" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-eye text-xs"></i></button>
+        <button onclick="editEmployee(${e.id})" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><i class="fa-solid fa-pen text-xs"></i></button>
+        <button onclick="confirmDeleteEmployee(${e.id})" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-trash text-xs"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+function viewEmployeeFromSearch(id) {
+  switchTab('search');
+  setTimeout(() => {
+    const emp = employees.find(e => String(e.id) === String(id));
+    if (emp) { document.getElementById('search-input').value = emp.name; renderSearchResults(); }
+  }, 200);
+}
+
+// ============ RATES ============
+function resetRateForm() {
+  document.getElementById('rate-form').reset();
+  document.getElementById('rate-edit-id').value = '';
+  document.getElementById('rate-form-title').textContent = 'Ongeraho Akazi';
+  document.getElementById('rate-submit-label').textContent = 'Bika';
+  document.getElementById('rate-form-cancel').classList.add('hidden');
+}
+function handleRateSubmit(e) {
+  e.preventDefault();
+  const editId = document.getElementById('rate-edit-id').value;
+  const name = document.getElementById('rate-name').value.trim();
+  const icon = document.getElementById('rate-icon').value.trim() || '📝';
+  const rate = Number(document.getElementById('rate-amount').value) || 0;
+  if (!name) { showToast('Izina arasabwa', 'error'); return; }
+  const dup = categories.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== editId);
+  if (dup) { showToast('Iri zina risanzwe rihari', 'error'); return; }
+  if (editId) {
+    const i = categories.findIndex(c => c.id === editId);
+    if (i !== -1) {
+      const oldName = categories[i].name;
+      categories[i] = { ...categories[i], name, icon, rate };
+      if (oldName !== name) {
+        employees.forEach(e => { if (e.role === oldName) e.role = name; });
+        workRecords.forEach(w => { if (w.workType === oldName) w.workType = name; });
+      }
+      showToast('✅ Akazi kavuguruwe!');
+    }
+  } else {
+    categories.push({ id: 'CAT-' + Date.now().toString().slice(-6), name, icon, rate });
+    showToast('✅ Akazi gashya kongewe!');
+  }
+  saveData();
+  resetRateForm();
+}
+function editRate(id) {
+  const c = categories.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('rate-edit-id').value = c.id;
+  document.getElementById('rate-name').value = c.name;
+  document.getElementById('rate-icon').value = c.icon;
+  document.getElementById('rate-amount').value = c.rate;
+  document.getElementById('rate-form-title').textContent = 'Hindura: ' + c.name;
+  document.getElementById('rate-submit-label').textContent = 'Bika Impinduka';
+  document.getElementById('rate-form-cancel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function confirmDeleteRate(id) {
+  const c = categories.find(x => x.id === id);
+  if (!c) return;
+  openConfirmModal('Siba Akazi', `Uremeza gusiba "${c.name}"?`, () => {
+    categories = categories.filter(x => x.id !== id);
+    employees.forEach(e => { if (e.role === c.name) e.role = 'Ikindi'; });
+    workRecords.forEach(w => { if (w.workType === c.name) w.workType = 'Ikindi'; });
+    saveData();
+    showToast('✅ Akazi kasibwe');
+  });
+}
+function renderRates() {
+  const tbody = document.getElementById('rates-table-body');
+  if (categories.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Nta byiciro.</td></tr>`; return; }
+  tbody.innerHTML = categories.map(c => {
+    const emps = employees.filter(e => e.role === c.name);
+    return `
+      <tr class="hover:bg-amber-50 transition">
+        <td class="p-3 text-2xl">${escapeHTML(c.icon)}</td>
+        <td class="p-3 font-bold text-gray-900">${escapeHTML(c.name)}</td>
+        <td class="p-3 font-semibold text-green-700">${fmt(c.rate)} Frw</td>
+        <td class="p-3 text-gray-600">${emps.length}</td>
+        <td class="p-3 text-right space-x-1">
+          <button onclick="editRate('${c.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-pen text-xs"></i></button>
+          <button onclick="confirmDeleteRate('${c.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-trash text-xs"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============ WORK ============
+function populateWorkEmployeeSelect() {
+  const sel = document.getElementById('work-employee-id');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- Hitamo --</option>' + employees.map(e => `<option value="${e.id}">${e.id}. ${escapeHTML(e.name)} — ${escapeHTML(e.role)}</option>`).join('');
+  if (current && employees.some(e => String(e.id) === String(current))) sel.value = current;
+}
+function populateWorkTypeSelect() {
+  const sel = document.getElementById('work-type');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- Hitamo --</option>' + categories.map(c => `<option value="${escapeHTML(c.name)}">${c.icon} ${escapeHTML(c.name)}</option>`).join('');
+  if (current && categories.some(c => c.name === current)) sel.value = current;
+}
+function onWorkEmployeeSelect() {
+  const empId = document.getElementById('work-employee-id').value;
+  const rateInput = document.getElementById('work-rate');
+  const typeSel = document.getElementById('work-type');
+  if (!empId) { calculateWorkTotal(); return; }
+  const emp = employees.find(e => String(e.id) === String(empId));
+  if (emp) {
+    rateInput.value = emp.wageRate;
+    if (!typeSel.value) { typeSel.value = emp.role; onWorkTypeChange(false); }
+  }
+  calculateWorkTotal();
+}
+function onWorkTypeChange(overrideRate = true) {
+  const sel = document.getElementById('work-type');
+  const rateInput = document.getElementById('work-rate');
+  if (!sel.value) return;
+  const cat = getCategory(sel.value);
+  if (cat && overrideRate) rateInput.value = cat.rate;
+  calculateWorkTotal();
+}
+function resetWorkForm() {
+  document.getElementById('work-form').reset();
+  document.getElementById('work-edit-id').value = '';
+  document.getElementById('work-quantity').value = 1;
+  document.getElementById('work-date').value = todayISO();
+  document.getElementById('work-form-title').textContent = 'Andika Umurimo';
+  document.getElementById('work-submit-label').textContent = 'Bika';
+  document.getElementById('work-form-cancel').classList.add('hidden');
+  calculateWorkTotal();
+  populateWorkEmployeeSelect();
+  populateWorkTypeSelect();
+}
+function calculateWorkTotal() {
+  const q = Number(document.getElementById('work-quantity').value) || 0;
+  const r = Number(document.getElementById('work-rate').value) || 0;
+  document.getElementById('work-calculated-total').textContent = fmt(q * r) + ' Frw';
+}
+function handleWorkSubmit(e) {
+  e.preventDefault();
+  const editId = document.getElementById('work-edit-id').value;
+  const employeeId = document.getElementById('work-employee-id').value;
+  const workType = document.getElementById('work-type').value;
+  const date = document.getElementById('work-date').value;
+  const quantity = Number(document.getElementById('work-quantity').value) || 0;
+  const rate = Number(document.getElementById('work-rate').value) || 0;
+  const notes = document.getElementById('work-notes').value.trim();
+  if (!employeeId) { showToast('Hitamo umukozi', 'error'); return; }
+  if (!workType) { showToast('Hitamo akazi', 'error'); return; }
+  if (!date) { showToast('Shyiramo italiki', 'error'); return; }
+  if (quantity <= 0) { showToast('Ingano > 0', 'error'); return; }
+  const duplicate = workRecords.find(w => String(w.employeeId) === String(employeeId) && w.workType === workType && w.date === date && w.id !== editId);
+  if (duplicate) {
+    const emp = employees.find(e => String(e.id) === String(employeeId));
+    showToast(`❌ ${emp ? emp.name : 'Umukozi'} yamaze kwandikwa kuri "${workType}" ku ${date}!`, 'error');
+    return;
+  }
+  if (editId) {
+    const i = workRecords.findIndex(w => w.id === editId);
+    if (i !== -1) { workRecords[i] = { ...workRecords[i], employeeId, workType, date, quantity, rate, notes }; showToast('✅ Umurimo wavuguruwe!'); }
+  } else {
+    workRecords.push({ id: 'WRK-' + Date.now().toString().slice(-6), employeeId, workType, date, quantity, rate, notes, createdAt: new Date().toISOString() });
+    showToast('✅ Umurimo wanditswe!');
+  }
+  saveData();
+  resetWorkForm();
+}
+function editWork(id) {
+  const w = workRecords.find(x => x.id === id);
+  if (!w) return;
+  populateWorkEmployeeSelect();
+  populateWorkTypeSelect();
+  document.getElementById('work-edit-id').value = w.id;
+  document.getElementById('work-employee-id').value = w.employeeId;
+  document.getElementById('work-type').value = w.workType;
+  document.getElementById('work-date').value = w.date;
+  document.getElementById('work-quantity').value = w.quantity;
+  document.getElementById('work-rate').value = w.rate;
+  document.getElementById('work-notes').value = w.notes || '';
+  document.getElementById('work-form-title').textContent = 'Hindura Umurimo';
+  document.getElementById('work-submit-label').textContent = 'Bika Impinduka';
+  document.getElementById('work-form-cancel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function confirmDeleteWork(id) {
+  openConfirmModal('Siba Umurimo', 'Uremeza?', () => {
+    workRecords = workRecords.filter(w => w.id !== id);
+    saveData();
+    showToast('✅ Umurimo wasibwe');
+  });
+}
+function renderWork() {
+  const tbody = document.getElementById('work-table-body');
+  const list = [...workRecords].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">Nta murimo.</td></tr>`; return; }
+  tbody.innerHTML = list.slice(0, 50).map(w => {
+    const emp = employees.find(e => String(e.id) === String(w.employeeId));
+    return `
+      <tr class="hover:bg-amber-50 transition">
+        <td class="p-3 text-gray-600 text-xs">${w.date}</td>
+        <td class="p-3 font-medium text-gray-900 text-sm">${escapeHTML(emp ? emp.name : 'Wasibwe')}</td>
+        <td class="p-3 text-gray-700 text-xs">${getCategoryIcon(w.workType)} ${escapeHTML(w.workType)}</td>
+        <td class="p-3 text-gray-600 text-xs">${w.quantity}</td>
+        <td class="p-3 font-bold text-green-800 text-xs">${fmt(w.quantity * w.rate)} Frw</td>
+        <td class="p-3 text-right space-x-1">
+          <button onclick="editWork('${w.id}')" class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-pen text-xs"></i></button>
+          <button onclick="confirmDeleteWork('${w.id}')" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-trash text-xs"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============ SALARIES ============
+function setSalaryFilter(f) {
+  currentSalaryFilter = f;
+  ['all','pending','paid'].forEach(k => {
+    const b = document.getElementById('sal-filter-' + k);
+    if (!b) return;
+    b.className = `px-3 py-1.5 rounded-lg text-xs font-semibold ${k === f ? 'bg-green-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`;
+  });
+  renderSalaries();
+}
+function renderSalaries() {
+  let cP = 0, cPa = 0;
+  employees.forEach(e => {
+    const t = getEmployeeTotals(e.id);
+    if (t.outstanding > 0) cP++;
+    else if (t.earned > 0 && t.outstanding === 0) cPa++;
+  });
+  document.getElementById('cnt-all').textContent = employees.length;
+  document.getElementById('cnt-pending').textContent = cP;
+  document.getElementById('cnt-paid').textContent = cPa;
+  const tbody = document.getElementById('salaries-table-body');
+  let list = employees.filter(e => {
+    const t = getEmployeeTotals(e.id);
+    if (currentSalaryFilter === 'pending') return t.outstanding > 0;
+    if (currentSalaryFilter === 'paid') return t.earned > 0 && t.outstanding === 0;
+    return true;
+  });
+  if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">Nta mukozi.</td></tr>`; return; }
+  tbody.innerHTML = list.map(e => {
+    const t = getEmployeeTotals(e.id);
+    return `
+      <tr class="hover:bg-amber-50 transition">
+        <td class="p-3"><div class="font-bold text-gray-900 text-sm">${escapeHTML(e.name)}</div><div class="text-[10px] text-blue-700 font-mono">ID: ${e.id}</div></td>
+        <td class="p-3 font-bold text-xs">${fmt(t.earned)} Frw</td>
+        <td class="p-3 font-bold text-green-700 text-xs">${fmt(t.paid)} Frw</td>
+        <td class="p-3 font-bold text-xs ${t.outstanding > 0 ? 'text-rose-600' : 'text-gray-400'}">${fmt(t.outstanding)} Frw</td>
+        <td class="p-3 text-right">${t.outstanding > 0 ? `<button onclick="openPaymentForm(${e.id})" class="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg">Ishyura</button>` : '<span class="text-xs text-gray-400">✓</span>'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+function openPaymentForm(employeeId) {
+  const emp = employees.find(e => String(e.id) === String(employeeId)); if (!emp) return;
+  const t = getEmployeeTotals(employeeId);
+  if (t.outstanding <= 0) { showToast('Nta mwenda', 'error'); return; }
+  document.getElementById('pay-employee-id').value = emp.id;
+  document.getElementById('pay-emp-name-display').textContent = emp.name;
+  document.getElementById('pay-outstanding-display').value = fmt(t.outstanding) + ' Frw';
+  document.getElementById('pay-amount').value = t.outstanding;
+  document.getElementById('pay-amount').max = t.outstanding;
+  document.getElementById('pay-date').value = todayISO();
+  document.getElementById('payment-form-card').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function closePaymentForm() { document.getElementById('payment-form-card').classList.add('hidden'); document.getElementById('payment-form').reset(); }
+function handlePaymentSubmit(e) {
+  e.preventDefault();
+  const employeeId = document.getElementById('pay-employee-id').value;
+  const amount = Number(document.getElementById('pay-amount').value) || 0;
+  const date = document.getElementById('pay-date').value;
+  const method = document.getElementById('pay-method').value;
+  const notes = document.getElementById('pay-notes').value.trim();
+  const t = getEmployeeTotals(employeeId);
+  if (amount <= 0) { showToast('Amafaranga > 0', 'error'); return; }
+  if (amount > t.outstanding) { showToast('Arenze (' + fmt(t.outstanding) + ')', 'error'); return; }
+  if (!date) { showToast('Shyiramo italiki', 'error'); return; }
+  payments.push({ id: 'PAY-' + Date.now().toString().slice(-6), employeeId, amount, date, method, notes, createdAt: new Date().toISOString() });
+  saveData();
+  closePaymentForm();
+  showToast('✅ Ubwishyu bwanditswe!');
+}
+
+// ============ DAILY ============
+function setDailyQuick(type) {
+  const f = document.getElementById('daily-from'), t = document.getElementById('daily-to');
+  const today = new Date();
+  if (type === 'today') { f.value = isoDate(today); t.value = isoDate(today); }
+  else if (type === 'week') { const d = new Date(today); const day = d.getDay() || 7; const mon = new Date(d); mon.setDate(d.getDate() - day + 1); f.value = isoDate(mon); t.value = isoDate(today); }
+  else if (type === 'month') { f.value = isoDate(new Date(today.getFullYear(), today.getMonth(), 1)); t.value = isoDate(today); }
+  renderDaily();
+}
+function renderDaily() {
+  const from = document.getElementById('daily-from').value;
+  const to = document.getElementById('daily-to').value;
+  const works = getWorksInRange(from, to);
+  const pays = getPaymentsInRange(from, to);
+  const wbd = {}; works.forEach(w => { (wbd[w.date] = wbd[w.date] || []).push(w); });
+  const pbd = {}; pays.forEach(p => { (pbd[p.date] = pbd[p.date] || []).push(p); });
+  const dates = new Set([...Object.keys(wbd), ...Object.keys(pbd)]);
+  let totalE = 0, totalP = 0;
+  dates.forEach(d => { totalE += sumEarned(wbd[d] || []); totalP += sumPaid(pbd[d] || []); });
+  document.getElementById('daily-summary').innerHTML = `
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">📅 Iminsi</p><p class="text-lg font-bold text-green-900">${dates.size}</p></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border border-amber-50"><p class="text-[10px] font-bold text-gray-500 uppercase">💰 Yakorewe</p><p class="text-lg font-bold text-green-900">${fmt(totalE)} Frw</p></div>
+    <div class="bg-white p-3 rounded-xl shadow-sm border-2 border-rose-200"><p class="text-[10px] font-bold text-rose-700 uppercase">🕐 Asigaye</p><p class="text-lg font-bold text-rose-700">${fmt(totalE - totalP)} Frw</p></div>
+  `;
+  const cardsEl = document.getElementById('daily-cards');
+  if (dates.size === 0) { cardsEl.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-amber-50 p-8 text-center"><p class="text-gray-500">Nta makuru</p></div>`; return; }
+  cardsEl.innerHTML = Array.from(dates).sort((a,b) => b.localeCompare(a)).map(date => {
+    const dayWorks = wbd[date] || [];
+    const dayPays = pbd[date] || [];
+    const earned = sumEarned(dayWorks);
+    const paid = sumPaid(dayPays);
+    const empIds = new Set(dayWorks.map(w => w.employeeId));
+    const isToday = date === todayISO();
+    const dayName = ['Ku cyumweru', 'Kuwa mbere', 'Kuwa kabiri', 'Kuwa gatatu', 'Kuwa kane', 'Kuwa gatanu', 'Kuwa gatandatu'][new Date(date).getDay()];
+    return `
+      <div class="bg-white rounded-2xl shadow-sm border ${isToday ? 'border-green-500 border-2' : 'border-amber-50'} overflow-hidden">
+        <div class="p-3 ${isToday ? 'bg-green-50' : 'bg-amber-50'} border-b flex items-center justify-between">
+          <div><h3 class="font-bold text-gray-900 text-sm">${dayName} ${isToday ? '<span class="ml-1 text-[9px] bg-green-500 text-white px-1.5 py-0.5 rounded-full">UYU MUNSI</span>' : ''}</h3><p class="text-[10px] text-gray-500">${new Date(date).toLocaleDateString('rw-RW')}</p></div>
+          <p class="text-xs text-gray-500"><b>${empIds.size}</b> abakozi</p>
+        </div>
+        <div class="grid grid-cols-3 gap-1 p-2">
+          <div class="bg-gray-50 p-2 rounded-lg text-center"><p class="text-[9px] font-bold text-gray-500 uppercase">💰 Yakorewe</p><p class="text-xs font-bold text-green-900">${fmt(earned)}</p></div>
+          <div class="bg-green-50 p-2 rounded-lg text-center"><p class="text-[9px] font-bold text-green-700 uppercase">✅ Yishyuwe</p><p class="text-xs font-bold text-green-700">${fmt(paid)}</p></div>
+          <div class="bg-rose-50 p-2 rounded-lg text-center"><p class="text-[9px] font-bold text-rose-700 uppercase">🕐 Asigaye</p><p class="text-xs font-bold text-rose-700">${fmt(Math.max(0, earned - paid))}</p></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============ REPORTS ============
+function setReportQuick(type) {
+  const f = document.getElementById('report-from');
+  const t = document.getElementById('report-to');
+  const today = new Date();
+  let rangeLabel = '';
+  
+  if (type === 'today') {
+    f.value = isoDate(today);
+    t.value = isoDate(today);
+    rangeLabel = 'Uyu Munsi — ' + today.toLocaleDateString('rw-RW', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  else if (type === 'week') {
+    const d = new Date(today);
+    const day = d.getDay() || 7;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - day + 1);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    f.value = isoDate(monday);
+    t.value = isoDate(sunday);
+    rangeLabel = `Iki Cyumweru — ${monday.toLocaleDateString('rw-RW', { day: 'numeric', month: 'short' })} → ${sunday.toLocaleDateString('rw-RW', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  }
+  else if (type === 'month') {
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    f.value = isoDate(start);
+    t.value = isoDate(end);
+    rangeLabel = `Uku Kwezi — ${today.toLocaleDateString('rw-RW', { month: 'long', year: 'numeric' })}`;
+  }
+  else if (type === 'lastmonth') {
+    const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const end = new Date(today.getFullYear(), today.getMonth(), 0);
+    f.value = isoDate(start);
+    t.value = isoDate(end);
+    rangeLabel = `Ukwezi Gushize — ${start.toLocaleDateString('rw-RW', { month: 'long', year: 'numeric' })}`;
+  }
+  else if (type === 'year') {
+    f.value = isoDate(new Date(today.getFullYear(), 0, 1));
+    t.value = isoDate(today);
+    rangeLabel = `Uyu Mwaka — ${today.getFullYear()}`;
+  }
+  else {
+    f.value = '';
+    t.value = '';
+    rangeLabel = 'Byose';
+  }
+  
+  currentReportRange = { from: f.value, to: t.value, type };
+  updateReportButtons(type);
+  document.getElementById('rp-range-display').textContent = rangeLabel;
+  document.getElementById('rp-current-range').classList.remove('hidden');
+  renderReports();
+  showToast('✅ ' + rangeLabel);
+}
+
+function updateReportButtons(activeType) {
+  ['today', 'week', 'month', 'custom'].forEach(t => {
+    const btn = document.getElementById('rp-btn-' + t);
+    if (!btn) return;
+    if (t === activeType) {
+      btn.className = 'flex flex-col items-center justify-center p-3 rounded-xl border-2 border-green-500 bg-green-50 transition';
+    } else {
+      btn.className = 'flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 transition';
+    }
+  });
+}
+
+function openCalendarRange() {
+  const f = document.getElementById('cal-from');
+  const t = document.getElementById('cal-to');
+  const today = new Date();
+  if (!f.value) f.value = isoDate(new Date(today.getFullYear(), today.getMonth(), 1));
+  if (!t.value) t.value = isoDate(today);
+  document.getElementById('calendar-modal').classList.remove('hidden');
+}
+function closeCalendarRange() { document.getElementById('calendar-modal').classList.add('hidden'); }
+function quickCal(type) {
+  const f = document.getElementById('cal-from');
+  const t = document.getElementById('cal-to');
+  const today = new Date();
+  if (type === 'today') { f.value = isoDate(today); t.value = isoDate(today); }
+  else if (type === 'week') {
+    const d = new Date(today); const day = d.getDay() || 7;
+    const mon = new Date(d); mon.setDate(d.getDate() - day + 1);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    f.value = isoDate(mon); t.value = isoDate(sun);
+  }
+  else if (type === 'month') { f.value = isoDate(new Date(today.getFullYear(), today.getMonth(), 1)); t.value = isoDate(new Date(today.getFullYear(), today.getMonth() + 1, 0)); }
+  else if (type === 'lastmonth') { const s = new Date(today.getFullYear(), today.getMonth() - 1, 1); const e = new Date(today.getFullYear(), today.getMonth(), 0); f.value = isoDate(s); t.value = isoDate(e); }
+  else if (type === 'year') { f.value = isoDate(new Date(today.getFullYear(), 0, 1)); t.value = isoDate(today); }
+}
+function applyCalendarRange() {
+  const from = document.getElementById('cal-from').value;
+  const to = document.getElementById('cal-to').value;
+  if (!from || !to) { showToast('Hitamo Kuva na Kugeza', 'error'); return; }
+  if (from > to) { showToast('"Kuva" igomba kuba mbere ya "Kugeza"', 'error'); return; }
+  document.getElementById('report-from').value = from;
+  document.getElementById('report-to').value = to;
+  const rangeLabel = `${new Date(from).toLocaleDateString('rw-RW', { day: 'numeric', month: 'short', year: 'numeric' })} → ${new Date(to).toLocaleDateString('rw-RW', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  currentReportRange = { from, to, type: 'custom' };
+  updateReportButtons('custom');
+  document.getElementById('rp-range-display').textContent = 'Custom: ' + rangeLabel;
+  document.getElementById('rp-current-range').classList.remove('hidden');
+  renderReports();
+  closeCalendarRange();
+  showToast('✅ ' + rangeLabel);
+}
+
+function setReportView(view) {
+  currentReportView = view;
+  const dailyBtn = document.getElementById('rp-view-daily');
+  const fullBtn = document.getElementById('rp-view-full');
+  const dailyView = document.getElementById('report-view-daily');
+  const fullView = document.getElementById('report-view-full');
+  
+  if (view === 'daily') {
+    dailyBtn.className = 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-green-700 text-white transition';
+    fullBtn.className = 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+    dailyView.classList.remove('hidden');
+    fullView.classList.add('hidden');
+  } else {
+    fullBtn.className = 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-green-700 text-white transition';
+    dailyBtn.className = 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+    fullView.classList.remove('hidden');
+    dailyView.classList.add('hidden');
+  }
+}
+
+function renderReports() {
+  try {
+    const fromEl = document.getElementById('report-from');
+    const toEl = document.getElementById('report-to');
+    const from = fromEl ? fromEl.value : '';
+    const to = toEl ? toEl.value : '';
+    
+    const fw = getWorksInRange(from, to);
+    const fp = getPaymentsInRange(from, to);
+    
+    const tE = sumEarned(fw);
+    const tP = sumPaid(fp);
+    
+    document.getElementById('report-total-earned').textContent = fmt(tE) + ' Frw';
+    document.getElementById('report-total-paid').textContent = fmt(tP) + ' Frw';
+    document.getElementById('report-total-outstanding').textContent = fmt(tE - tP) + ' Frw';
+    
+    const empIds = new Set();
+    fw.forEach(w => empIds.add(String(w.employeeId)));
+    fp.forEach(p => empIds.add(String(p.employeeId)));
+    
+    document.getElementById('report-emp-count').textContent = empIds.size;
+    document.getElementById('report-range-label').textContent = (!from && !to) ? 'Byose' : `${from || '...'} → ${to || '...'}`;
+    
+    const tbody = document.getElementById('reports-table-body');
+    
+    if (employees.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Nta bakozi banditswe.</td></tr>`;
+    } else if (fw.length === 0 && fp.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center"><div class="text-gray-400 mb-2"><i class="fa-solid fa-inbox text-3xl"></i></div><p class="text-gray-600 font-medium">Nta makuru muri iki gihe</p></td></tr>`;
+    } else {
+      let relevantEmps = employees.filter(e => empIds.has(String(e.id)));
+      if (relevantEmps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Nta mukozi wabonetse</td></tr>`;
+      } else {
+        tbody.innerHTML = relevantEmps.map(e => {
+          const ew = fw.filter(w => String(w.employeeId) === String(e.id));
+          const ep = fp.filter(p => String(p.employeeId) === String(e.id));
+          const earned = sumEarned(ew);
+          const paid = sumPaid(ep);
+          return `
+            <tr class="hover:bg-amber-50 transition">
+              <td class="p-3"><span class="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">${e.id}</span></td>
+              <td class="p-3 font-bold text-gray-900 text-sm">${escapeHTML(e.name)}</td>
+              <td class="p-3 text-gray-600 text-xs">${getCategoryIcon(e.role)} ${escapeHTML(e.role)}</td>
+              <td class="p-3 text-gray-600 text-xs">${ew.length}</td>
+              <td class="p-3 font-semibold text-xs text-green-800">${fmt(earned)} Frw</td>
+              <td class="p-3 text-purple-700 font-semibold text-xs">${fmt(paid)} Frw</td>
+              <td class="p-3 text-rose-600 font-bold text-xs">${fmt(earned - paid)} Frw</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+    
+    renderReportDailyBreakdown(from, to, fw, fp);
+    
+  } catch (err) {
+    console.error('Report error:', err);
+  }
+}
+
+function renderReportDailyBreakdown(from, to, fw, fp) {
+  const cardsEl = document.getElementById('report-daily-cards');
+  const labelEl = document.getElementById('report-daily-label');
+  if (!cardsEl) return;
+  
+  let allDays = [];
+  
+  if (from && to) {
+    const startDate = new Date(from);
+    const endDate = new Date(to);
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      allDays.push(isoDate(current));
+      current.setDate(current.getDate() + 1);
+    }
+  } else {
+    const datesSet = new Set();
+    fw.forEach(w => w.date && datesSet.add(w.date));
+    fp.forEach(p => p.date && datesSet.add(p.date));
+    allDays = Array.from(datesSet).sort();
+  }
+  
+  if (allDays.length === 0) {
+    labelEl.textContent = '0';
+    cardsEl.innerHTML = `<div class="p-8 text-center text-gray-500"><i class="fa-solid fa-inbox text-3xl mb-2"></i><p>Nta makuru muri iki gihe</p></div>`;
+    return;
+  }
+  
+  allDays.sort();
+  labelEl.textContent = `${allDays.length} iminsi`;
+  
+  const dayNamesFull = ['Ku cyumweru', 'Kuwa mbere', 'Kuwa kabiri', 'Kuwa gatatu', 'Kuwa kane', 'Kuwa gatanu', 'Kuwa gatandatu'];
+  
+  cardsEl.innerHTML = allDays.map(date => {
+    const dayWorks = fw.filter(w => w.date === date);
+    const dayPays = fp.filter(p => p.date === date);
+    
+    const earned = sumEarned(dayWorks);
+    const paid = sumPaid(dayPays);
+    const remaining = Math.max(0, earned - paid);
+    
+    const dayEmpIds = new Set(dayWorks.map(w => String(w.employeeId)));
+    const dayEmpCount = dayEmpIds.size;
+    
+    const dateObj = new Date(date);
+    const dayName = dayNamesFull[dateObj.getDay()];
+    
+    const isToday = date === todayISO();
+    const hasData = dayWorks.length > 0 || dayPays.length > 0;
+    const isPast = date < todayISO();
+    
+    let bgColor = 'bg-gray-50';
+    let borderColor = 'border-gray-200';
+    let headerBg = 'bg-gray-100';
+    let iconBg = 'bg-gray-400';
+    let cursor = 'cursor-default';
+    let onclickAttr = '';
+    
+    if (hasData) {
+      cursor = 'cursor-pointer hover:shadow-md transition';
+      onclickAttr = `onclick="openDayDetail('${date}')"`;
+      if (isToday) {
+        bgColor = 'bg-green-50';
+        borderColor = 'border-green-500 border-2';
+        headerBg = 'bg-green-100';
+        iconBg = 'bg-green-500';
+      } else {
+        bgColor = 'bg-white';
+        borderColor = 'border-amber-300';
+        headerBg = 'bg-amber-50';
+        iconBg = 'bg-amber-500';
+      }
+    }
+    
+    return `
+      <div class="rounded-xl border ${borderColor} ${bgColor} overflow-hidden ${cursor}" ${onclickAttr}>
+        <div class="p-3 flex items-center justify-between ${headerBg}">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 ${iconBg} text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
+              ${dateObj.getDate()}
+            </div>
+            <div>
+              <p class="font-bold text-sm text-gray-900">
+                ${dayName}
+                ${isToday ? '<span class="ml-1 text-[9px] bg-green-600 text-white px-1.5 py-0.5 rounded-full">UYU MUNSI</span>' : ''}
+                ${!hasData && isPast ? '<span class="ml-1 text-[9px] bg-gray-400 text-white px-1.5 py-0.5 rounded-full">NTA MURIMO</span>' : ''}
+              </p>
+              <p class="text-[10px] text-gray-500">${dateObj.toLocaleDateString('rw-RW', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            ${hasData ? `<p class="text-[10px] text-gray-500 uppercase">Abakozi</p><p class="font-bold text-green-900">${dayEmpCount}</p>` : '<p class="text-[10px] text-gray-400 italic">—</p>'}
+          </div>
+        </div>
+        
+        ${hasData ? `
+          <div class="grid grid-cols-3 gap-2 p-3">
+            <div class="bg-white p-2 rounded-lg border border-gray-100 text-center">
+              <p class="text-[9px] font-bold text-gray-500 uppercase">💰 Yakorewe</p>
+              <p class="text-xs font-bold text-green-900">${fmt(earned)}</p>
+            </div>
+            <div class="bg-green-50 p-2 rounded-lg border border-green-100 text-center">
+              <p class="text-[9px] font-bold text-green-700 uppercase">✅ Yishyuwe</p>
+              <p class="text-xs font-bold text-green-700">${fmt(paid)}</p>
+            </div>
+            <div class="bg-rose-50 p-2 rounded-lg border border-rose-100 text-center">
+              <p class="text-[9px] font-bold text-rose-700 uppercase">🕐 Asigaye</p>
+              <p class="text-xs font-bold text-rose-700">${fmt(remaining)}</p>
+            </div>
+          </div>
+          <div class="px-3 pb-2 text-center">
+            <p class="text-[10px] text-green-700 font-semibold">
+              <i class="fa-solid fa-hand-pointer"></i> Kanda urebe abakozi
+            </p>
+          </div>
+        ` : `
+          <div class="p-3 text-center">
+            <p class="text-[10px] text-gray-400 italic">Nta mirimo yanditswe uyu munsi</p>
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+function openDayDetail(date) {
+  const modal = document.getElementById('day-detail-modal');
+  const titleEl = document.getElementById('day-modal-title');
+  const subEl = document.getElementById('day-modal-subtitle');
+  const empEl = document.getElementById('day-modal-employees');
+  
+  const dateObj = new Date(date);
+  const dayNamesFull = ['Ku cyumweru', 'Kuwa mbere', 'Kuwa kabiri', 'Kuwa gatatu', 'Kuwa kane', 'Kuwa gatanu', 'Kuwa gatandatu'];
+  const dayName = dayNamesFull[dateObj.getDay()];
+  
+  titleEl.textContent = dayName;
+  subEl.textContent = dateObj.toLocaleDateString('rw-RW', { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  const dayWorks = workRecords.filter(w => w.date === date);
+  const dayPays = payments.filter(p => p.date === date);
+  
+  const earned = sumEarned(dayWorks);
+  const paid = sumPaid(dayPays);
+  const remaining = Math.max(0, earned - paid);
+  
+  document.getElementById('day-modal-earned').textContent = fmt(earned) + ' Frw';
+  document.getElementById('day-modal-paid').textContent = fmt(paid) + ' Frw';
+  document.getElementById('day-modal-remaining').textContent = fmt(remaining) + ' Frw';
+  
+  const empIds = new Set();
+  dayWorks.forEach(w => empIds.add(String(w.employeeId)));
+  
+  document.getElementById('day-modal-emp-count').textContent = empIds.size;
+  
+  if (empIds.size === 0) {
+    empEl.innerHTML = `<div class="p-4 text-center text-gray-500"><p>Nta mukozi wakoraga uyu munsi</p></div>`;
+  } else {
+    empEl.innerHTML = Array.from(empIds).map(empId => {
+      const emp = employees.find(e => String(e.id) === String(empId));
+      if (!emp) return '';
+      
+      const empWorks = dayWorks.filter(w => String(w.employeeId) === String(empId));
+      const empPays = dayPays.filter(p => String(p.employeeId) === String(empId));
+      
+      const empEarned = sumEarned(empWorks);
+      const empPaid = sumPaid(empPays);
+      const empRemaining = Math.max(0, empEarned - empPaid);
+      
+      let statusColor = 'bg-rose-100 text-rose-800', statusText = '🔴 Ntarishyuwe';
+      if (empEarned > 0 && empPaid >= empEarned) { statusColor = 'bg-green-100 text-green-800'; statusText = '✅ Yishyuwe'; }
+      else if (empPaid > 0) { statusColor = 'bg-amber-100 text-amber-800'; statusText = '🕐 Igice'; }
+      
+      return `
+        <div class="border border-gray-200 rounded-xl overflow-hidden">
+          <div class="p-3 bg-gray-50 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-9 h-9 bg-green-600 text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                ${escapeHTML(emp.name.charAt(0))}
+              </div>
+              <div>
+                <p class="font-bold text-sm text-gray-900">${escapeHTML(emp.name)}</p>
+                <p class="text-[10px] text-gray-500">ID: ${emp.id} · ${getCategoryIcon(emp.role)} ${escapeHTML(emp.role)}</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${statusColor}">${statusText}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1 p-2 bg-white">
+            <div class="text-center">
+              <p class="text-[9px] font-bold text-gray-500 uppercase">💰 Yakoreye</p>
+              <p class="text-xs font-bold text-green-900">${fmt(empEarned)}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[9px] font-bold text-green-700 uppercase">✅ Yishyuwe</p>
+              <p class="text-xs font-bold text-green-700">${fmt(empPaid)}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[9px] font-bold text-rose-700 uppercase">🕐 Asigaye</p>
+              <p class="text-xs font-bold text-rose-700">${fmt(empRemaining)}</p>
+            </div>
+          </div>
+          ${empWorks.length > 0 ? `
+            <div class="p-2 bg-amber-50 border-t">
+              <p class="text-[10px] font-bold text-amber-900 uppercase mb-1">Imirimo:</p>
+              ${empWorks.map(w => `
+                <div class="flex justify-between text-[10px] py-0.5">
+                  <span class="text-gray-700">${getCategoryIcon(w.workType)} ${escapeHTML(w.workType)} — ${w.quantity} × ${fmt(w.rate)}</span>
+                  <span class="font-bold text-green-800">${fmt(w.quantity * w.rate)} Frw</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+function closeDayDetail() {
+  document.getElementById('day-detail-modal').classList.add('hidden');
+}
+
+function exportSalaryReportCSV() {
+  if (employees.length === 0) { showToast('Nta bakozi', 'error'); return; }
+  const from = document.getElementById('report-from').value;
+  const to = document.getElementById('report-to').value;
+  const fw = getWorksInRange(from, to);
+  const fp = getPaymentsInRange(from, to);
+  let csv = '\uFEFFID,Amazina,Akazi,Yakoreye,Yishyuwe,Asigaye\r\n';
+  employees.forEach(e => {
+    const ew = fw.filter(w => String(w.employeeId) === String(e.id));
+    const ep = fp.filter(p => String(p.employeeId) === String(e.id));
+    csv += `${e.id},"${e.name}","${e.role}",${sumEarned(ew)},${sumPaid(ep)},${sumEarned(ew) - sumPaid(ep)}\r\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `FarmSmart_Raporo_${todayISO()}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✅ Raporo yamanuwe!');
+}
+
+// ============ BACKUP ============
+function exportBackup() {
+  const data = { version: '23.0', exportDate: new Date().toISOString(), categories, employees, workRecords, payments };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `FarmSmart_Backup_${todayISO()}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✅ Backup yamanuwe!');
+}
+function importBackup(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.categories || !data.employees) throw new Error('File ntabwo ari backup');
+      openConfirmModal('Garura Backup', 'Uremeza gusimbuza amakuru yose?', () => {
+        categories = data.categories || categories;
+        employees = data.employees || [];
+        workRecords = data.workRecords || [];
+        payments = data.payments || [];
+        saveData();
+        showToast('✅ Backup yagaruwe!');
+      });
+    } catch (err) { showToast('File ntabwo ari backup', 'error'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============ CONFIRM ============
+function openConfirmModal(title, message, cb) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').textContent = message;
+  confirmCallback = cb;
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); confirmCallback = null; }
+
+// ============ DASHBOARD ============
+function renderDashboard() {
+  const today = new Date();
+  document.getElementById('dashboard-date-label').textContent = today.toLocaleDateString('rw-RW', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  let tE = 0, tP = 0;
+  employees.forEach(e => { const t = getEmployeeTotals(e.id); tE += t.earned; tP += t.paid; });
+  document.getElementById('hero-total-earned').textContent = fmt(tE) + ' Frw';
+  document.getElementById('hero-total-paid').textContent = fmt(tP) + ' Frw';
+  document.getElementById('hero-total-outstanding').textContent = fmt(tE - tP) + ' Frw';
+  const todayR = getDateRange('today');
+  const weekR = getDateRange('week');
+  const monthR = getDateRange('month');
+  document.getElementById('today-earned').textContent = fmt(sumEarned(getWorksInRange(todayR.from, todayR.to))) + ' Frw';
+  document.getElementById('week-earned').textContent = fmt(sumEarned(getWorksInRange(weekR.from, weekR.to))) + ' Frw';
+  document.getElementById('month-earned').textContent = fmt(sumEarned(getWorksInRange(monthR.from, monthR.to))) + ' Frw';
+  document.getElementById('stat-total-employees').textContent = employees.length;
+  let totalDebt = 0, debtCount = 0;
+  employees.forEach(e => { const t = getEmployeeTotals(e.id); if (t.outstanding > 0) { totalDebt += t.outstanding; debtCount++; } });
+  document.getElementById('total-debt').textContent = fmt(totalDebt) + ' Frw';
+  document.getElementById('debt-emp-count').textContent = debtCount;
+}
+
+// ============ REFRESH ============
+function refreshAll() {
+  try {
+    renderDashboard();
+    renderRates();
+    renderEmployees();
+    populateWorkEmployeeSelect();
+    populateWorkTypeSelect();
+    renderWork();
+    renderSalaries();
+    renderReports();
+    renderDaily();
+    renderSearchResults();
+  } catch (e) { console.error('Refresh error:', e); }
+}
+
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const empDate = document.getElementById('emp-start-date');
+  const workDate = document.getElementById('work-date');
+  if (empDate) empDate.value = isoDate(today);
+  if (workDate) workDate.value = isoDate(today);
+  
+  const todayDateEl = document.getElementById('rp-date-today');
+  if (todayDateEl) todayDateEl.textContent = today.toLocaleDateString('rw-RW', { day: 'numeric', month: 'short' });
+  
+  const weekDateEl = document.getElementById('rp-date-week');
+  if (weekDateEl) {
+    const d = new Date(today);
+    const day = d.getDay() || 7;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - day + 1);
+    weekDateEl.textContent = monday.toLocaleDateString('rw-RW', { day: 'numeric', month: 'short' }) + ' →';
+  }
+  
+  const monthDateEl = document.getElementById('rp-date-month');
+  if (monthDateEl) monthDateEl.textContent = today.toLocaleDateString('rw-RW', { month: 'long' });
+  
+  const monthStart = isoDate(new Date(today.getFullYear(), today.getMonth(), 1));
+  const pFrom = document.getElementById('report-from');
+  const pTo = document.getElementById('report-to');
+  if (pFrom) pFrom.value = monthStart;
+  if (pTo) pTo.value = isoDate(today);
+  
+  const dFrom = document.getElementById('daily-from');
+  const dTo = document.getElementById('daily-to');
+  if (dFrom) dFrom.value = monthStart;
+  if (dTo) dTo.value = isoDate(today);
+  
+  const confirmBtn = document.getElementById('confirm-action-btn');
+  if (confirmBtn) confirmBtn.addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeConfirmModal(); });
+  const confirmModal = document.getElementById('confirm-modal');
+  if (confirmModal) confirmModal.addEventListener('click', e => { if (e.target.id === 'confirm-modal') closeConfirmModal(); });
+  const calModal = document.getElementById('calendar-modal');
+  if (calModal) calModal.addEventListener('click', e => { if (e.target.id === 'calendar-modal') closeCalendarRange(); });
+  const dayModal = document.getElementById('day-detail-modal');
+  if (dayModal) dayModal.addEventListener('click', e => { if (e.target.id === 'day-detail-modal') closeDayDetail(); });
+  
+  populateRoleSelect();
+  populateWorkTypeSelect();
+  setReportView('daily');
+  switchTab('dashboard');
+  refreshAll();
+});
+</script>
+</body>
+</html>
