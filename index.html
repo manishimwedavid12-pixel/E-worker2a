@@ -72,6 +72,31 @@
     <div class="bg-blue-50 border border-blue-200 rounded-xl p-3"><p class="text-[10px] font-bold text-blue-900 uppercase">👥 Abakozi</p><p class="text-2xl font-bold text-blue-900" id="stat-total-employees">0</p></div>
     <div class="bg-rose-50 border border-rose-200 rounded-xl p-3"><p class="text-[10px] font-bold text-rose-900 uppercase">⚠️ Umwenda</p><p class="text-2xl font-bold text-rose-900" id="total-debt">0 Frw</p><p class="text-[10px] text-rose-700"><span id="debt-emp-count">0</span> bafite umwenda</p></div>
   </div>
+
+  <!-- QUICK INSIGHTS -->
+  <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-50">
+    <h3 class="font-bold text-sm text-gray-700 mb-3 flex items-center space-x-2">
+      <i class="fa-solid fa-bolt text-amber-500"></i><span>Amakuru Yihuse</span>
+    </h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="switchTab('work')" class="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition text-left">
+        <div class="w-9 h-9 bg-green-600 text-white rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-clipboard-list text-sm"></i></div>
+        <div><p class="text-[10px] font-bold text-green-700 uppercase">Imirimo</p><p class="text-sm font-bold text-green-900"><span id="insight-work-today">0</span> uyu munsi</p></div>
+      </button>
+      <button onclick="switchTab('employees')" class="flex items-center space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition text-left">
+        <div class="w-9 h-9 bg-blue-600 text-white rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user-check text-sm"></i></div>
+        <div><p class="text-[10px] font-bold text-blue-700 uppercase">Bakora</p><p class="text-sm font-bold text-blue-900"><span id="insight-active-emps">0</span> abakozi</p></div>
+      </button>
+      <button onclick="switchTab('salaries')" class="flex items-center space-x-2 p-3 bg-purple-50 border border-purple-200 rounded-xl hover:bg-purple-100 transition text-left">
+        <div class="w-9 h-9 bg-purple-600 text-white rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hand-holding-dollar text-sm"></i></div>
+        <div><p class="text-[10px] font-bold text-purple-700 uppercase">Yishyuwe</p><p class="text-sm font-bold text-purple-900"><span id="insight-paid-month">0</span> Frw</p></div>
+      </button>
+      <button onclick="switchTab('daily')" class="flex items-center space-x-2 p-3 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition text-left">
+        <div class="w-9 h-9 bg-amber-600 text-white rounded-lg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-calendar-day text-sm"></i></div>
+        <div><p class="text-[10px] font-bold text-amber-700 uppercase">Uyu Munsi</p><p class="text-sm font-bold text-amber-900"><span id="insight-day-total">0</span> Frw</p></div>
+      </button>
+    </div>
+  </div>
 </section>
 
 <!-- SEARCH -->
@@ -203,7 +228,19 @@
       <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Umwenda</label><input type="text" id="pay-outstanding-display" disabled class="w-full px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 font-bold"></div>
       <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Amafaranga *</label><input type="number" id="pay-amount" min="1" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
       <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Italiki *</label><input type="date" id="pay-date" required class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
-      <div><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Uburyo *</label><select id="pay-method" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"><option value="cash">Cash</option><option value="momo">MoMo</option><option value="bank">Bank</option></select></div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Uburyo *</label>
+        <select id="pay-method" onchange="onPaymentMethodChange()" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm">
+          <option value="cash">💵 Cash</option>
+          <option value="momo">📱 Mobile Money</option>
+          <option value="bank">🏦 Bank</option>
+          <option value="other">➕ Ubundi buryo</option>
+        </select>
+      </div>
+      <div id="pay-method-other-wrap" class="hidden">
+        <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Andika ubundi buryo *</label>
+        <input type="text" id="pay-method-other" placeholder="Urugero: Cheque, Airtel..." class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm">
+      </div>
       <div class="lg:col-span-2"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Notes</label><input type="text" id="pay-notes" class="w-full px-3 py-2 bg-gray-50 border rounded-lg text-sm"></div>
       <div class="md:col-span-2 lg:col-span-3 flex justify-end pt-2 border-t border-gray-100"><button type="submit" class="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow text-sm"><i class="fa-solid fa-check mr-1"></i> Emeza</button></div>
     </form>
@@ -419,13 +456,16 @@
   </div>
 </div>
 
-<!-- MOBILE NAV -->
-<nav class="md:hidden bg-white border-t fixed inset-x-0 bottom-0 z-30 flex justify-around py-1.5 shadow-lg no-scrollbar overflow-x-auto">
-  <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-chart-pie text-base"></i><span class="text-[9px]">Ahabanza</span></button>
-  <button onclick="switchTab('search')" data-tab="search" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-magnifying-glass text-base"></i><span class="text-[9px]">Shakisha</span></button>
-  <button onclick="switchTab('employees')" data-tab="employees" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-users text-base"></i><span class="text-[9px]">Abakozi</span></button>
-  <button onclick="switchTab('work')" data-tab="work" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-clipboard-list text-base"></i><span class="text-[9px]">Imirimo</span></button>
-  <button onclick="switchTab('reports')" data-tab="reports" class="mob-btn flex flex-col items-center flex-1 py-1 text-gray-500 min-w-[55px]"><i class="fa-solid fa-file-invoice-dollar text-base"></i><span class="text-[9px]">Raporo</span></button>
+<!-- MOBILE NAV (MENU ZOSE 8) -->
+<nav class="md:hidden bg-white border-t fixed inset-x-0 bottom-0 z-30 flex py-1.5 shadow-lg overflow-x-auto no-scrollbar">
+  <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-chart-pie text-base"></i><span class="text-[9px]">Ahabanza</span></button>
+  <button onclick="switchTab('search')" data-tab="search" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-magnifying-glass text-base"></i><span class="text-[9px]">Shakisha</span></button>
+  <button onclick="switchTab('employees')" data-tab="employees" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-users text-base"></i><span class="text-[9px]">Abakozi</span></button>
+  <button onclick="switchTab('rates')" data-tab="rates" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-tags text-base"></i><span class="text-[9px]">Amafaranga</span></button>
+  <button onclick="switchTab('work')" data-tab="work" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-clipboard-list text-base"></i><span class="text-[9px]">Imirimo</span></button>
+  <button onclick="switchTab('salaries')" data-tab="salaries" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-wallet text-base"></i><span class="text-[9px]">Imishahara</span></button>
+  <button onclick="switchTab('daily')" data-tab="daily" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-calendar-check text-base"></i><span class="text-[9px]">Iminsi</span></button>
+  <button onclick="switchTab('reports')" data-tab="reports" class="mob-btn flex flex-col items-center py-1 text-gray-500 min-w-[62px] px-1"><i class="fa-solid fa-file-invoice-dollar text-base"></i><span class="text-[9px]">Raporo</span></button>
 </nav>
 
 <!-- CONFIRM MODAL -->
@@ -487,6 +527,15 @@ function isoDate(d) {
 function getCategory(name) { return categories.find(c => c.name === name); }
 function getCategoryIcon(name) { const c = getCategory(name); return c ? c.icon : '📝'; }
 
+function getPaymentMethodLabel(p) {
+  if (!p) return '';
+  if (p.method === 'cash') return '💵 Cash';
+  if (p.method === 'momo') return '📱 MoMo';
+  if (p.method === 'bank') return '🏦 Bank';
+  if (p.method === 'other') return '➕ ' + escapeHTML(p.methodOther || 'Ubundi');
+  return escapeHTML(p.method || '');
+}
+
 function generateNextEmployeeId() {
   if (employees.length === 0) return 1;
   const maxId = Math.max(...employees.map(e => Number(e.id) || 0));
@@ -517,7 +566,7 @@ function switchTab(tabId) {
   });
   document.querySelectorAll('.mob-btn').forEach(b => {
     const isA = b.dataset.tab === tabId;
-    b.className = `mob-btn flex flex-col items-center flex-1 py-1 min-w-[55px] ${isA ? 'text-green-600 font-bold' : 'text-gray-500'}`;
+    b.className = `mob-btn flex flex-col items-center py-1 min-w-[62px] px-1 ${isA ? 'text-green-600 font-bold' : 'text-gray-500'}`;
   });
   if (tabId === 'search') setTimeout(() => document.getElementById('search-input')?.focus(), 100);
   if (tabId === 'reports') renderReports();
@@ -632,7 +681,7 @@ function renderEmployeeDetail(emp) {
             <table class="w-full text-left text-xs">
               <thead class="sticky top-0 bg-purple-50"><tr><th class="p-2">Italiki</th><th class="p-2">Amafaranga</th><th class="p-2">Uburyo</th></tr></thead>
               <tbody class="divide-y divide-gray-100">
-                ${empPays.map(p => `<tr><td class="p-2 text-gray-600">${p.date}</td><td class="p-2 font-bold text-purple-700">${fmt(p.amount)} Frw</td><td class="p-2 text-gray-600">${{ cash: 'Cash', momo: 'MoMo', bank: 'Bank' }[p.method] || p.method}</td></tr>`).join('')}
+                ${empPays.map(p => `<tr><td class="p-2 text-gray-600">${p.date}</td><td class="p-2 font-bold text-purple-700">${fmt(p.amount)} Frw</td><td class="p-2 text-gray-600">${getPaymentMethodLabel(p)}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>
@@ -993,7 +1042,7 @@ function renderSalaries() {
         <td class="p-3 font-bold text-xs">${fmt(t.earned)} Frw</td>
         <td class="p-3 font-bold text-green-700 text-xs">${fmt(t.paid)} Frw</td>
         <td class="p-3 font-bold text-xs ${t.outstanding > 0 ? 'text-rose-600' : 'text-gray-400'}">${fmt(t.outstanding)} Frw</td>
-        <td class="p-3 text-right">${t.outstanding > 0 ? `<button onclick="openPaymentForm(${e.id})" class="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg">Ishyura</button>` : '<span class="text-xs text-gray-400">✓</span>'}</td>
+        <td class="p-3 text-right">${t.outstanding > 0 ? `<button onclick="openPaymentForm(${e.id})" class="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg">${t.paid > 0 ? 'Ishyura igice' : 'Ishyura'}</button>` : '<span class="text-xs text-gray-400">✓ Yishyuwe</span>'}</td>
       </tr>
     `;
   }).join('');
@@ -1008,22 +1057,49 @@ function openPaymentForm(employeeId) {
   document.getElementById('pay-amount').value = t.outstanding;
   document.getElementById('pay-amount').max = t.outstanding;
   document.getElementById('pay-date').value = todayISO();
+  document.getElementById('pay-method').value = 'cash';
+  document.getElementById('pay-method-other').value = '';
+  document.getElementById('pay-method-other-wrap').classList.add('hidden');
+  document.getElementById('pay-method-other').required = false;
   document.getElementById('payment-form-card').classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function closePaymentForm() { document.getElementById('payment-form-card').classList.add('hidden'); document.getElementById('payment-form').reset(); }
+function closePaymentForm() {
+  document.getElementById('payment-form-card').classList.add('hidden');
+  document.getElementById('payment-form').reset();
+  document.getElementById('pay-method-other-wrap').classList.add('hidden');
+}
+function onPaymentMethodChange() {
+  const method = document.getElementById('pay-method').value;
+  const wrap = document.getElementById('pay-method-other-wrap');
+  const otherInput = document.getElementById('pay-method-other');
+  if (method === 'other') {
+    wrap.classList.remove('hidden');
+    otherInput.required = true;
+  } else {
+    wrap.classList.add('hidden');
+    otherInput.required = false;
+    otherInput.value = '';
+  }
+}
 function handlePaymentSubmit(e) {
   e.preventDefault();
   const employeeId = document.getElementById('pay-employee-id').value;
   const amount = Number(document.getElementById('pay-amount').value) || 0;
   const date = document.getElementById('pay-date').value;
   const method = document.getElementById('pay-method').value;
+  const methodOther = (document.getElementById('pay-method-other').value || '').trim();
   const notes = document.getElementById('pay-notes').value.trim();
   const t = getEmployeeTotals(employeeId);
   if (amount <= 0) { showToast('Amafaranga > 0', 'error'); return; }
-  if (amount > t.outstanding) { showToast('Arenze (' + fmt(t.outstanding) + ')', 'error'); return; }
+  if (amount > t.outstanding) { showToast('Arenze umwenda (' + fmt(t.outstanding) + ' Frw)', 'error'); return; }
   if (!date) { showToast('Shyiramo italiki', 'error'); return; }
-  payments.push({ id: 'PAY-' + Date.now().toString().slice(-6), employeeId, amount, date, method, notes, createdAt: new Date().toISOString() });
+  if (method === 'other' && !methodOther) { showToast('Andika ubundi buryo', 'error'); return; }
+  payments.push({
+    id: 'PAY-' + Date.now().toString().slice(-6),
+    employeeId, amount, date, method, methodOther: method === 'other' ? methodOther : '', notes,
+    createdAt: new Date().toISOString()
+  });
   saveData();
   closePaymentForm();
   showToast('✅ Ubwishyu bwanditswe!');
@@ -1575,6 +1651,19 @@ function renderDashboard() {
   employees.forEach(e => { const t = getEmployeeTotals(e.id); if (t.outstanding > 0) { totalDebt += t.outstanding; debtCount++; } });
   document.getElementById('total-debt').textContent = fmt(totalDebt) + ' Frw';
   document.getElementById('debt-emp-count').textContent = debtCount;
+
+  // ===== QUICK INSIGHTS =====
+  const todayWorks = getWorksInRange(todayR.from, todayR.to);
+  const activeEmps = employees.filter(e => e.status === 'active').length;
+  const monthPaid = sumPaid(getPaymentsInRange(monthR.from, monthR.to));
+  const el1 = document.getElementById('insight-work-today');
+  const el2 = document.getElementById('insight-active-emps');
+  const el3 = document.getElementById('insight-paid-month');
+  const el4 = document.getElementById('insight-day-total');
+  if (el1) el1.textContent = todayWorks.length;
+  if (el2) el2.textContent = activeEmps;
+  if (el3) el3.textContent = fmt(monthPaid);
+  if (el4) el4.textContent = fmt(sumEarned(todayWorks));
 }
 
 // ============ REFRESH ============
